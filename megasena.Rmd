@@ -40,17 +40,12 @@ dez6 <- html_text(megasena %>% html_elements("tr :nth-child(9)"))
 
 nr_sorteio <- nr_sorteio %>%mutate(nr_sorteio = as.numeric(nr_sorteio)) %>% drop_na() 
 
-dez1 <- dez1 %>% mutate(value = as.numeric(value)) %>% drop_na()
-
-dez2 <- dez2 %>% mutate(value = as.numeric(value)) %>% drop_na()
-
-dez3 <- dez3 %>% mutate(value = as.numeric(value)) %>% drop_na()
-
-dez4 <- dez4 %>% mutate(value = as.numeric(value)) %>% drop_na()
-
-dez5 <- dez5 %>% mutate(value = as.numeric(value)) %>% drop_na()
-
-dez6 <- dez6 %>% mutate(value = as.numeric(value)) %>% drop_na()
+dez1 <- dez1 %>% mutate(dezena = as.numeric(value)) %>% drop_na()
+dez2 <- dez2 %>% mutate(dezena = as.numeric(value)) %>% drop_na()
+dez3 <- dez3 %>% mutate(dezena = as.numeric(value)) %>% drop_na()
+dez4 <- dez4 %>% mutate(dezena = as.numeric(value)) %>% drop_na()
+dez5 <- dez5 %>% mutate(dezena = as.numeric(value)) %>% drop_na()
+dez6 <- dez6 %>% mutate(dezena = as.numeric(value)) %>% drop_na()
 
 tab1 = cbind(nr_sorteio, dez1)
 tab2 = cbind(nr_sorteio, dez2)
@@ -63,7 +58,7 @@ tab_long <- rbind(tab1, tab2, tab3, tab4, tab5, tab6)
 
 colnames(tab_long) <- c("sorteio", "dezena")
 
-tab_long <- tab_long %>% as_tibble() %>% mutate(dezena = as_factor(dezena))
+tab_long <- tab_long %>% as_tibble()
 
 tab_long
 
@@ -102,7 +97,7 @@ mais_vezes <- tab_long %>%
   arrange(n_vezes) %>% 
   top_n(6)
 
-str(tab_long)
+# str(tab_long)
 
 menos_vezes
 
@@ -110,7 +105,6 @@ mais_vezes
 ```
 
 ## A diferença entre o número que mais saiu e o que menos saiu é (em sorteios)
-
 ```{r}
 mais_vezes$n_vezes[1] - menos_vezes$n_vezes[1]
 ```
