@@ -1,0 +1,165 @@
+---
+title: "megasena"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Instalando pacotes
+
+```{r, echo = FALSE}
+
+#  Instalando pacotes
+
+library(tidyverse)
+library(rvest)
+```
+
+# Objetivo
+
+Considerando os seis numeros que menos sairam ate hoje e os 6 numeros que não saem ha mais tempo, propor dentre eles, 8 jogos de 6 números.
+
+## Baixando e preparando os dados (por dezena sorteada)
+
+```{r}
+url <-  "http://loterias.caixa.gov.br/wps/portal/loterias/landing/megasena/!ut/p/a1/04_Sj9CPykssy0xPLMnMz0vMAfGjzOLNDH0MPAzcDbwMPI0sDBxNXAOMwrzCjA0sjIEKIoEKnN0dPUzMfQwMDEwsjAw8XZw8XMwtfQ0MPM2I02-AAzgaENIfrh-FqsQ9wNnUwNHfxcnSwBgIDUyhCvA5EawAjxsKckMjDDI9FQE-F4ca/dl5/d5/L2dBISEvZ0FBIS9nQSEh/pw/Z7_HGK818G0K8DBC0QPVN93KQ10G1/res/id=historicoHTML/c=cacheLevelPage/=/"
+
+megasena <- read_html(url)
+
+nr_sorteio <- html_text(megasena %>% html_elements("tr :nth-child(1)"))
+dez1 <- html_text(megasena %>% html_elements("tr :nth-child(4)"))
+dez2 <- html_text(megasena %>% html_elements("tr :nth-child(5)"))
+dez3 <- html_text(megasena %>% html_elements("tr :nth-child(6)"))
+dez4 <- html_text(megasena %>% html_elements("tr :nth-child(7)"))
+dez5 <- html_text(megasena %>% html_elements("tr :nth-child(8)"))
+dez6 <- html_text(megasena %>% html_elements("tr :nth-child(9)"))
+
+# Excluindo na's
+
+nr_sorteio <- nr_sorteio %>%mutate(nr_sorteio = as.numeric(nr_sorteio)) %>% drop_na() 
+
+dez1 <- dez1 %>% mutate(value = as.numeric(value)) %>% drop_na()
+
+dez2 <- dez2 %>% mutate(value = as.numeric(value)) %>% drop_na()
+
+dez3 <- dez3 %>% mutate(value = as.numeric(value)) %>% drop_na()
+
+dez4 <- dez4 %>% mutate(value = as.numeric(value)) %>% drop_na()
+
+dez5 <- dez5 %>% mutate(value = as.numeric(value)) %>% drop_na()
+
+dez6 <- dez6 %>% mutate(value = as.numeric(value)) %>% drop_na()
+
+tab1 = cbind(nr_sorteio, dez1)
+tab2 = cbind(nr_sorteio, dez2)
+tab3 = cbind(nr_sorteio, dez3)
+tab4 = cbind(nr_sorteio, dez4)
+tab5 = cbind(nr_sorteio, dez5)
+tab6 = cbind(nr_sorteio, dez6)
+
+tab_long <- rbind(tab1, tab2, tab3, tab4, tab5, tab6)
+
+colnames(tab_long) <- c("sorteio", "dezena")
+
+tab_long <- tab_long %>% as_tibble() %>% mutate(dezena = as_factor(dezena))
+
+tab_long
+
+```
+
+## Dezenas que não saem há mais tempo
+
+```{r}
+
+ult_sorteio <- length(tab1$value)
+
+ult_sorteio_dezena <- tab_long %>% 
+  group_by(dezena) %>% 
+  summarize(ult_sort_dez = max(sorteio)) %>% 
+  mutate(dif = ult_sort_dez - ult_sorteio) %>% 
+  arrange(ult_sort_dez) %>% 
+  top_n(-6, dif)
+
+ult_sorteio_dezena
+
+```
+
+## Dezenas que menos sairam até hoje
+
+```{r}
+
+menos_vezes <- tab_long %>% 
+  group_by(dezena) %>% 
+  summarise(n_vezes = n()) %>% 
+  arrange(n_vezes) %>% 
+  top_n(-6)
+
+mais_vezes <- tab_long %>% 
+  group_by(dezena) %>% 
+  summarise(n_vezes = n()) %>% 
+  arrange(n_vezes) %>% 
+  top_n(6)
+
+str(tab_long)
+
+menos_vezes
+
+mais_vezes
+```
+
+## A diferença entre o número que mais saiu e o que menos saiu é (em sorteios)
+
+```{r}
+mais_vezes$n_vezes[1] - menos_vezes$n_vezes[1]
+```
+
+## Dispersão de números sorteados
+
+```{r}
+graf <- tab_long %>% 
+  group_by(dezena) %>% 
+  summarise(n_vezes = n()) %>% 
+  mutate(dezena = fct_reorder(dezena, n_vezes)) %>% 
+  ggplot(aes(dezena, n_vezes))+
+  geom_col()
+
+graf
+
+```
+
+## Propondo números para as 8 apostas
+
+```{r}
+nrs <- c(ult_sorteio_dezena$dezena, menos_vezes$dezena)
+
+nrs <- unique(nrs)
+
+nrs
+
+# Quantas combinações de 6 números são possíveis, partindo desses números?
+
+length <- length(nrs)
+
+choose(length, 6)
+
+aposta1 <- sample(nrs, 6)
+aposta2 <- sample(nrs, 6)
+aposta3 <- sample(nrs, 6)
+aposta4 <- sample(nrs, 6)
+aposta5 <- sample(nrs, 6)
+aposta6 <- sample(nrs, 6)
+aposta7 <- sample(nrs, 6)
+aposta8 <- sample(nrs, 6)
+
+aposta1
+aposta2
+aposta3
+aposta4
+aposta5
+aposta6
+aposta7
+aposta8
+
+```
