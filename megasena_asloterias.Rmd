@@ -1,0 +1,87 @@
+---
+title: "Palpites da Megasena"
+author: Alexandre M. Arruda
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(janitor)
+
+```
+
+## Obtendo todos os resultados e preparando os dados
+
+```{r}
+resultados <- readxl::read_excel("mega_sena_asloterias_ate_concurso_2459_crescente.xlsx", skip = 5) %>%
+  janitor::clean_names()
+
+resultados
+
+ultimo_concurso <- max(resultados$concurso)
+
+tab_long <- resultados %>% 
+  pivot_longer(!c(concurso, data), names_to = "bola", values_to = "nr") 
+
+vezes <- tab_long %>% 
+  group_by(nr) %>% 
+  summarise(vezes = n())
+```
+
+## Mais vezes
+
+```{r}
+mais_vezes <- vezes %>% arrange(-vezes) %>% top_n(6) %>% print()
+```
+
+## Menos vezes
+
+```{r}
+menos_vezes <- vezes %>% arrange(vezes) %>% top_n(-6) %>% print()
+```
+
+## Há mais tempo não saem
+
+```{r}
+mais_tempo <- tab_long %>% 
+  group_by(nr) %>% 
+  summarise(sorteado_no = max(concurso)) %>% 
+  mutate(diferenca = ultimo_concurso - sorteado_no) %>% 
+  arrange(-diferenca) %>% 
+  top_n(6) %>% 
+  print()
+
+```
+
+## Menos saíram e não saem há mais tempo
+
+```{r, echo = FALSE}
+nrs_palpite <- unique(c(menos_vezes$nr, mais_tempo$nr)) %>% sort() %>% print()
+
+Palpite_1 = sample(nrs_palpite, 6)
+Palpite_2 = sample(nrs_palpite, 6)
+Palpite_3 = sample(nrs_palpite, 6)
+Palpite_4 = sample(nrs_palpite, 6)
+Palpite_5 = sample(nrs_palpite, 6)
+Palpite_6 = sample(nrs_palpite, 6)
+Palpite_7 = sample(nrs_palpite, 6)
+```
+
+## Palpites
+
+```{r, echo = FALSE}
+print(Palpite_1)
+print(Palpite_2)
+print(Palpite_3)
+print(Palpite_4)
+print(Palpite_5)
+print(Palpite_6)
+print(Palpite_7)
+```
+
